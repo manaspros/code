@@ -3,23 +3,35 @@ import { getConnectionLink } from "@/lib/composio";
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, app, redirectUrl } = await req.json();
+    const body = await req.json();
+    const { app, redirectUrl, firebaseUid } = body;
 
-    if (!userId) {
-      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
-    }
+    // Log received parameters for debugging
+    console.log("Connect route received:", { app, redirectUrl, firebaseUid });
 
+    // Validate required parameters
     if (!app) {
-      return NextResponse.json({ error: "App name is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "App name is required", received: body },
+        { status: 400 }
+      );
     }
 
+    if (!firebaseUid) {
+      return NextResponse.json(
+        { error: "Firebase UID is required", received: body },
+        { status: 400 }
+      );
+    }
+
+    // Get connection link (redirectUrl can be optional)
     const connectionUrl = await getConnectionLink(
-      userId,
+      firebaseUid,
       app,
-      redirectUrl
+      redirectUrl || undefined
     );
 
-    return NextResponse.json({ connectionUrl });
+    return NextResponse.json({ url: connectionUrl });
   } catch (error: any) {
     console.error("Error in connect route:", error);
     return NextResponse.json(

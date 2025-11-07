@@ -1,6 +1,7 @@
 "use client";
 
-import { useChat } from "ai/react";
+// @ts-ignore - AI SDK import
+import { useChat } from "@ai-sdk/react";
 import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -82,20 +83,20 @@ export default function ChatInterface() {
           <Box sx={{ textAlign: "center", mt: 4, color: "text.secondary" }}>
             <SmartToyIcon sx={{ fontSize: 60, mb: 2, opacity: 0.5 }} />
             <Typography variant="body1">
-              Hi! I'm your AI academic assistant. Try asking:
+              Hi! I&apos;m your AI academic assistant. Try asking:
             </Typography>
             <Box sx={{ mt: 2, textAlign: "left", maxWidth: 400, mx: "auto" }}>
               <Typography variant="body2" sx={{ mb: 1 }}>
-                • "Show me all deadlines this week"
+                • &ldquo;Show me all deadlines this week&rdquo;
               </Typography>
               <Typography variant="body2" sx={{ mb: 1 }}>
-                • "Find PDFs from my Machine Learning course"
+                • &ldquo;Find PDFs from my Machine Learning course&rdquo;
               </Typography>
               <Typography variant="body2" sx={{ mb: 1 }}>
-                • "What assignments are due this weekend?"
+                • &ldquo;What assignments are due this weekend?&rdquo;
               </Typography>
               <Typography variant="body2">
-                • "Search for unread emails from professors"
+                • &ldquo;Search for unread emails from professors&rdquo;
               </Typography>
             </Box>
           </Box>
@@ -221,8 +222,8 @@ export default function ChatInterface() {
           <TextField
             fullWidth
             variant="outlined"
-            placeholder="Ask me anything... (e.g., 'Show me deadlines this week')"
-            value={input}
+            placeholder="Ask me anything... (e.g., &apos;Show me deadlines this week&apos;)"
+            value={input || ""}
             onChange={handleInputChange}
             disabled={isLoading}
             size="small"
@@ -239,7 +240,7 @@ export default function ChatInterface() {
           <Button
             type="submit"
             variant="contained"
-            disabled={isLoading || !input.trim()}
+            disabled={isLoading || !(input || "").trim()}
             endIcon={<SendIcon />}
           >
             Send
