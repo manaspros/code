@@ -1,7 +1,7 @@
 # Bug Fixes Report - Collegiate Inbox Navigator
 
 ## Summary
-Fixed 11 critical bugs that were preventing proper integration with Composio, breaking the OAuth flow, causing disconnect errors, preventing chat input, and causing potential runtime errors.
+Fixed 12 critical bugs that were preventing proper integration with Composio, breaking the OAuth flow, causing disconnect errors, preventing chat input, and causing potential runtime errors. Includes major upgrade to Composio v3 API.
 
 ---
 
@@ -312,6 +312,71 @@ return connectionRequest.redirectUrl;
 
 ---
 
+### 12. ✅ Deprecated V2 API - Upgrade to V3 Required
+**Location:** `package.json`, `lib/composio.ts`
+
+**Issue:** Using deprecated `composio-core` v0.5.39 package which calls v2 API endpoints that are no longer available as of April 2025.
+
+**Impact:** ALL OAuth and integration operations failed with error:
+```
+{"error":"This endpoint is no longer available. Please upgrade to v3 APIs."}
+```
+
+**Fix:** Upgraded to the new `@composio/core` v0.1.55 package which uses v3 APIs.
+
+**Changes:**
+1. **Package upgrade:**
+   - Uninstalled: `composio-core` v0.5.39 (deprecated)
+   - Installed: `@composio/core` v0.1.55 (v3 API)
+
+2. **Import updated:**
+   ```typescript
+   // Before:
+   import { Composio } from "composio-core";
+
+   // After:
+   import { Composio } from "@composio/core";
+   ```
+
+3. **Connection method changed to use v3 link() API:**
+   ```typescript
+   // Before (v2 - DEPRECATED):
+   const connectionRequest = await composio.connectedAccounts.initiate({
+     userId: firebaseUid,
+     integrationId: integrationName,
+     redirectUrl: redirectUrl || `${process.env.NEXT_PUBLIC_APP_URL}/integrations`,
+   });
+
+   // After (v3 - CURRENT):
+   const connectionRequest = await composio.connectedAccounts.link(
+     firebaseUid,
+     integrationName,
+     {
+       callbackUrl: redirectUrl || `${process.env.NEXT_PUBLIC_APP_URL}/integrations`,
+     }
+   );
+   ```
+
+4. **Disconnect method simplified:**
+   ```typescript
+   // Before: delete({ connectedAccountId })
+   // After: delete(connectionId)
+   await composio.connectedAccounts.delete(connectionId);
+   ```
+
+**V3 API Benefits:**
+- Hosted authentication with `link()` handles auth configs automatically
+- Simpler API requiring fewer parameters
+- Improved performance and stability
+- Uses nano IDs instead of UUIDs
+- Better error handling and developer experience
+
+**References:**
+- [V3 Migration Guide](https://docs.composio.dev/changelog/api-v-3-migration)
+- [V3 Documentation](https://docs.composio.dev/docs/migration)
+
+---
+
 ## Testing Recommendations
 
 After these fixes, please test:
@@ -354,9 +419,10 @@ After these fixes, please test:
 1. `components/IntegrationManager.tsx` - Fixed parameter name (userId → firebaseUid)
 2. `components/ChatInterface.tsx` - Fixed chat input field + Added loading state
 3. `app/api/integrations/connect/route.ts` - Fixed response property (url → connectionUrl)
-4. `lib/composio.ts` - Simplified entity creation + Fixed redirect_url parameter + Fixed disconnect method parameters
+4. `lib/composio.ts` - **Upgraded to v3 API** + Simplified entity creation + Fixed connection methods
 5. `app/api/chat/route.ts` - Removed edge runtime
-6. `.env.local.example` - Created new template
+6. `package.json` - **Upgraded composio-core → @composio/core v0.1.55**
+7. `.env.local.example` - Created new template
 
 ---
 
