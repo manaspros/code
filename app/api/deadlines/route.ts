@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getComposioEntity } from "@/lib/composio";
+import { getComposioEntity } from "@/lib/ai/composio";
 import { collection, query, where, getDocs, addDoc, doc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 

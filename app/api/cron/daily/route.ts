@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getComposioEntity } from "@/lib/composio";
+import { getComposioEntity } from "@/lib/ai/composio";
 import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { getGeminiModel } from "@/lib/gemini";
+import { getGeminiModel } from "@/lib/ai/gemini";
 import { format } from "date-fns";
 
 /**

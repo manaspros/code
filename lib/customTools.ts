@@ -1,4 +1,5 @@
 import { getAdminDb } from "@/lib/firebaseAdmin";
+// import { searchEmailsBySemantic } from "@/lib/nomicEmbeddings";
 
 /**
  * Custom tools that query Firestore cache instead of directly calling APIs
@@ -6,11 +7,13 @@ import { getAdminDb } from "@/lib/firebaseAdmin";
  */
 
 export const customTools = {
+  // TODO: Re-enable semantic search after fixing schema validation
+  // semantic_search_emails: { ... },
   // Query deadlines from cache
   query_deadlines: {
     description: "Get upcoming deadlines and assignments from the cache. Faster than fetching from Gmail.",
     parameters: {
-      type: "object" as const,
+      type: "object",
       properties: {
         course: {
           type: "string",
@@ -21,6 +24,7 @@ export const customTools = {
           description: "Maximum number of deadlines to return (default: 10)",
         },
       },
+      required: [],
     },
     execute: async (params: { course?: string; limit?: number }, userId: string) => {
       try {
@@ -64,7 +68,7 @@ export const customTools = {
   query_documents: {
     description: "Search for documents (PDFs, DOCX, etc.) from the cache. Faster than searching Gmail.",
     parameters: {
-      type: "object" as const,
+      type: "object",
       properties: {
         course: {
           type: "string",
@@ -79,6 +83,7 @@ export const customTools = {
           description: "Maximum number of documents to return (default: 10)",
         },
       },
+      required: [],
     },
     execute: async (params: { course?: string; search?: string; limit?: number }, userId: string) => {
       try {
@@ -128,7 +133,7 @@ export const customTools = {
   query_alerts: {
     description: "Get schedule alerts (cancelled classes, room changes, etc.) from the cache.",
     parameters: {
-      type: "object" as const,
+      type: "object",
       properties: {
         kind: {
           type: "string",
@@ -139,6 +144,7 @@ export const customTools = {
           description: "Maximum number of alerts to return (default: 10)",
         },
       },
+      required: [],
     },
     execute: async (params: { kind?: string; limit?: number }, userId: string) => {
       try {
@@ -182,8 +188,9 @@ export const customTools = {
   check_sync_status: {
     description: "Check when the last sync happened and how many items were synced.",
     parameters: {
-      type: "object" as const,
+      type: "object",
       properties: {},
+      required: [],
     },
     execute: async (params: {}, userId: string) => {
       try {

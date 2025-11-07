@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeAction } from "@/lib/composio";
 import { getAdminDb } from "@/lib/firebaseAdmin";
-import { categorizeEmail, extractDeadlines, detectAlerts } from "@/lib/gemini";
+import { batchCreateEmbeddings } from "@/lib/nomicEmbeddings";
 import { FieldValue } from "firebase-admin/firestore";
 
 export async function POST(req: NextRequest) {
@@ -81,6 +81,26 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    console.log(`Processing ${messages.length} emails...`);
+
+    // Extract email data for batch processing
+    const emailsForEmbedding = messages.map((msg: any) => {
+      const headers = msg.payload?.headers || [];
+      return {
+        id: msg.id,
+        subject: headers.find((h: any) => h.name === "Subject")?.value || "",
+        from: headers.find((h: any) => h.name === "From")?.value || "",
+        snippet: msg.snippet || "",
+        date: headers.find((h: any) => h.name === "Date")?.value || "",
+        payload: msg.payload,
+      };
+    });
+
+    // Create embeddings in ONE batch call (no AI analysis per email!)
+    console.log("Creating embeddings with Nomic...");
+    const emailEmbeddings = await batchCreateEmbeddings(emailsForEmbedding);
+    console.log(`Created ${emailEmbeddings.length} embeddings`);
+
     let batch = db.batch();
     let synced = 0;
     let deadlinesFound = 0;
@@ -88,65 +108,65 @@ export async function POST(req: NextRequest) {
     let documentsFound = 0;
     let batchCount = 0;
 
-    // Process emails in batches
-    for (const message of messages) {
+    // Process emails with embeddings (no AI calls!)
+    for (let i = 0; i < messages.length; i++) {
       try {
-        // With verbose=true, the emails should already have full details
-        // No need to fetch message details again
-        const msgData = message;
-        const headers = msgData.payload?.headers || [];
+        const message = messages[i];
+        const emailData = emailsForEmbedding[i];
+        const embedding = emailEmbeddings[i];
 
-        const subject = headers.find((h: any) => h.name === "Subject")?.value || "";
-        const from = headers.find((h: any) => h.name === "From")?.value || "";
-        const date = headers.find((h: any) => h.name === "Date")?.value || "";
-        const snippet = msgData.snippet || "";
-
-        // Get email body
-        let body = "";
-        if (msgData.payload?.body?.data) {
-          body = Buffer.from(msgData.payload.body.data, "base64").toString("utf-8");
-        } else if (msgData.payload?.parts) {
-          const textPart = msgData.payload.parts.find((p: any) =>
-            p.mimeType === "text/plain" || p.mimeType === "text/html"
-          );
-          if (textPart?.body?.data) {
-            body = Buffer.from(textPart.body.data, "base64").toString("utf-8");
-          }
+        if (!embedding) {
+          console.log(`Skipping email ${message.id} - no embedding created`);
+          continue;
         }
 
-        const emailText = `${subject}\n\n${body || snippet}`;
+        const { subject, from, date, payload } = emailData;
+        const course = embedding.metadata.course || "Uncategorized";
 
-        // AI Categorization
-        const course = await categorizeEmail(subject, from, emailText);
+        // Save embedding to Firestore
+        const embeddingRef = db.collection("email_embeddings").doc(userId).collection("emails").doc(message.id);
+        batch.set(embeddingRef, {
+          emailId: message.id,
+          subject,
+          from,
+          snippet: embedding.snippet,
+          embedding: embedding.embedding,
+          course,
+          hasDeadline: embedding.metadata.hasDeadline,
+          hasAlert: embedding.metadata.hasAlert,
+          date,
+          createdAt: FieldValue.serverTimestamp(),
+        });
+        batchCount++;
 
-        // Extract deadlines
-        const deadlines = await extractDeadlines(emailText, subject);
-        if (deadlines.length > 0) {
-          for (const deadline of deadlines) {
-            const deadlineRef = db.collection("cache_deadlines").doc(userId).collection("items").doc();
-            batch.set(deadlineRef, {
-              ...deadline,
-              course: course || "Uncategorized",
-              source: "gmail",
-              emailId: message.id,
-              from: from,
-              createdAt: FieldValue.serverTimestamp(),
-            });
-            deadlinesFound++;
-            batchCount++;
-          }
+        // Save deadline if detected by metadata
+        if (embedding.metadata.hasDeadline) {
+          const deadlineRef = db.collection("cache_deadlines").doc(userId).collection("items").doc();
+          batch.set(deadlineRef, {
+            title: subject,
+            dueAt: date, // Will need better date parsing
+            type: "assignment",
+            course,
+            source: "gmail",
+            emailId: message.id,
+            from,
+            createdAt: FieldValue.serverTimestamp(),
+          });
+          deadlinesFound++;
+          batchCount++;
         }
 
-        // Detect alerts
-        const alert = await detectAlerts(subject, emailText);
-        if (alert) {
+        // Save alert if detected by metadata
+        if (embedding.metadata.hasAlert) {
           const alertRef = db.collection("cache_alerts").doc(userId).collection("items").doc();
           batch.set(alertRef, {
-            ...alert,
-            course: course || "Uncategorized",
+            kind: "urgent",
+            subject,
+            link: null,
+            course,
             emailId: message.id,
-            from: from,
-            date: date,
+            from,
+            date,
             createdAt: FieldValue.serverTimestamp(),
           });
           alertsFound++;
@@ -154,7 +174,7 @@ export async function POST(req: NextRequest) {
         }
 
         // Extract attachments
-        const parts = msgData.payload?.parts || [];
+        const parts = payload?.parts || [];
         for (const part of parts) {
           const filename = part.filename || "";
           const isDocument =
@@ -168,12 +188,12 @@ export async function POST(req: NextRequest) {
             const docRef = db.collection("cache_documents").doc(userId).collection("files").doc();
             batch.set(docRef, {
               name: filename,
-              course: course || "Uncategorized",
+              course,
               mime: part.mimeType,
               emailId: message.id,
               attachmentId: part.body.attachmentId,
-              subject: subject,
-              from: from,
+              subject,
+              from,
               size: part.body.size || 0,
               createdAt: FieldValue.serverTimestamp(),
             });
@@ -183,6 +203,11 @@ export async function POST(req: NextRequest) {
         }
 
         synced++;
+
+        // Log progress every 10 emails
+        if (synced % 10 === 0) {
+          console.log(`Progress: ${synced}/${messages.length} emails processed`);
+        }
 
         // Firebase Admin SDK allows max 500 operations per batch
         // Commit and create new batch every 400 operations to be safe
@@ -213,7 +238,21 @@ export async function POST(req: NextRequest) {
       documentsFound: documentsFound,
     });
 
-    console.log(`Sync complete: ${synced} emails, ${deadlinesFound} deadlines, ${alertsFound} alerts, ${documentsFound} documents`);
+    console.log(`
+╔════════════════════════════════════════════════════════╗
+║              SYNC COMPLETE!                            ║
+╠════════════════════════════════════════════════════════╣
+║ Emails processed:    ${synced.toString().padStart(4)} emails                     ║
+║ Embeddings created:  ${emailEmbeddings.length.toString().padStart(4)} embeddings               ║
+║ Deadlines found:     ${deadlinesFound.toString().padStart(4)} deadlines                  ║
+║ Alerts found:        ${alertsFound.toString().padStart(4)} alerts                     ║
+║ Documents found:     ${documentsFound.toString().padStart(4)} documents                  ║
+║                                                        ║
+║ NOMIC EMBEDDINGS:                                      ║
+║ NO AI CALLS USED! Pure embeddings + pattern matching  ║
+║ Ready for RAG-based semantic search in chat           ║
+╚════════════════════════════════════════════════════════╝
+    `);
 
     return NextResponse.json({
       success: true,

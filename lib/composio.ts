@@ -31,20 +31,31 @@ export async function getConnectionLink(
 
     const toolkitSlug = APP_TOOLKIT_MAP[app.toLowerCase()] || app.toLowerCase();
 
-    // Use toolkit.authorize to initiate connection with entityId
-    const connectionRequest = await composio.toolkits.authorize(
-      firebaseUid, // This is the entityId
-      toolkitSlug,
-      {
-        redirectUrl: redirectUrl,
-      }
-    );
+    // For SDK v0.2.3, use the simpler approach
+    // The SDK will handle the integration lookup internally
+    const connectionParams: any = {
+      appName: toolkitSlug,
+      entityId: firebaseUid,
+    };
+
+    // Add optional redirect URL if provided
+    if (redirectUrl) {
+      connectionParams.redirectUrl = redirectUrl;
+    }
+
+    // Use the initiate method which exists in v0.2.3
+    const connectionRequest = await composio.connectedAccounts.initiate(connectionParams);
 
     console.log("Connection request created:", connectionRequest);
 
-    return connectionRequest.redirectUrl;
-  } catch (error) {
-    console.error("Error generating connection link:", error);
+    // Return the redirect URL or connection status
+    return connectionRequest.redirectUrl || connectionRequest.connectionStatus;
+  } catch (error: any) {
+    console.error("Error generating connection link:", {
+      message: error.message,
+      details: error.details || error.response?.data,
+      stack: error.stack,
+    });
     throw error;
   }
 }

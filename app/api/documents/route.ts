@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getComposioEntity } from "@/lib/composio";
+import { getComposioEntity } from "@/lib/ai/composio";
 import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { categorizeEmail } from "@/lib/gemini";
+// import { categorizeEmail } from "@/lib/gemini"; // Commented out - not in new AI backend
 
 export async function GET(req: NextRequest) {
   try {
@@ -47,8 +47,8 @@ export async function GET(req: NextRequest) {
             if (courseMatch) {
               course = courseMatch[0];
             } else {
-              // Use Gemini as fallback
-              try {
+              // Use Gemini as fallback (commented out - using new AI backend)
+              /* try {
                 const analysis = await categorizeEmail(
                   email.snippet || "",
                   subject
@@ -56,7 +56,8 @@ export async function GET(req: NextRequest) {
                 course = analysis.courseName || "Uncategorized";
               } catch (err) {
                 console.error("Error categorizing email:", err);
-              }
+              } */
+              course = "Uncategorized"; // Fallback
             }
 
             documents.push({
