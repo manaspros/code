@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Collegiate Inbox Navigator 🎓
 
-## Getting Started
+An AI-powered academic assistant that helps college students manage their emails, assignments, deadlines, and course materials through a natural language interface powered by Google Gemini AI and Composio.
 
-First, run the development server:
+## Features
+
+### Core Features ✅
+- **Natural Language Chat Interface**: Ask questions like "Show me all deadlines this week"
+- **Gmail Integration**: Read, search, and manage university emails
+- **Google Classroom Integration**: Access courses, assignments, materials
+- **Google Calendar Integration**: View and sync deadlines automatically
+- **Google Drive Integration**: Search and access course files
+- **Smart Email Categorization**: AI automatically categorizes emails
+- **Critical Path Dashboard**: Deadlines, Documents, and Alerts
+
+### Bonus Features 🚀
+- **Calendar Heatmap**: GitHub-style visualization
+- **Analytics Dashboard**: Charts showing emails/week, deadlines/month
+- **Faculty Filter**: View only professor emails
+- **8 AM Daily Routine**: Automated morning check
+- **Push Notifications**: Browser notifications for critical changes
+- **NLP File Search**: Semantic search with Pinecone
+- **Voice Interaction**: Speech-to-text and text-to-speech
+
+## Tech Stack
+
+- Next.js 15 (React 19), Material-UI v6, Firebase, Composio, Google Gemini AI
+- Recharts, Pinecone, node-cron, Web Speech API
+
+## Quick Start
 
 ```bash
+npm install
+cp .env.example .env.local
+# Fill in your API keys in .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Get API keys from:
+- Composio: https://app.composio.dev/settings
+- Gemini: https://aistudio.google.com/apikey
+- Firebase: https://console.firebase.google.com
+- Pinecone (optional): https://www.pinecone.io/
 
-## Learn More
+## Usage
 
-To learn more about Next.js, take a look at the following resources:
+1. Sign in with Google or Email
+2. Connect apps at `/integrations`
+3. Start chatting with the AI assistant
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Example commands:
+- "Show me all deadlines this week"
+- "Find PDFs from my Machine Learning course"
+- "What's due this weekend?"
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## How It Works
 
-## Deploy on Vercel
+User Query → Gemini AI → Composio Tools → Google APIs → Formatted Response
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Composio handles OAuth and provides 250+ tools. Gemini AI understands natural language and calls the right tools automatically.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deploy
+
+```bash
+vercel
+```
+
+Built for Hackathon Challenge 5 with ❤️

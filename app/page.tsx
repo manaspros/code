@@ -1,65 +1,238 @@
-import Image from "next/image";
+"use client";
+
+import { useFirebaseAuth } from "@/hooks/useFirebaseAuth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import {
+  Box,
+  Container,
+  Typography,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+} from "@mui/material";
+import SchoolIcon from "@mui/icons-material/School";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import EmailIcon from "@mui/icons-material/Email";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 
 export default function Home() {
+  const { user, loading, signInWithGoogle } = useFirebaseAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user && !loading) {
+      router.push("/dashboard");
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Typography>Loading...</Typography>
+      </Box>
+    );
+  }
+
+  if (user) {
+    return null; // Will redirect to dashboard
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <Box sx={{ minHeight: "100vh", backgroundColor: "#f5f7fa" }}>
+      {/* Hero Section */}
+      <Box
+        sx={{
+          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          color: "white",
+          py: 12,
+          textAlign: "center",
+        }}
+      >
+        <Container maxWidth="lg">
+          <SchoolIcon sx={{ fontSize: 80, mb: 2 }} />
+          <Typography variant="h2" gutterBottom fontWeight="bold">
+            Collegiate Inbox Navigator
+          </Typography>
+          <Typography variant="h5" sx={{ mb: 4, opacity: 0.9 }}>
+            Your AI-Powered Academic Assistant
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 4, maxWidth: 600, mx: "auto" }}>
+            Never miss a deadline, assignment, or important email again. Let AI organize
+            your academic life across Gmail, Google Classroom, and Calendar.
+          </Typography>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={signInWithGoogle}
+            sx={{
+              backgroundColor: "white",
+              color: "#667eea",
+              px: 4,
+              py: 1.5,
+              fontSize: "1.1rem",
+              "&:hover": { backgroundColor: "#f0f0f0" },
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            Sign In with Google
+          </Button>
+        </Container>
+      </Box>
+
+      {/* Features Section */}
+      <Container maxWidth="lg" sx={{ py: 8 }}>
+        <Typography variant="h4" align="center" gutterBottom fontWeight="bold" sx={{ mb: 6 }}>
+          Features
+        </Typography>
+
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={4}>
+            <Card sx={{ height: "100%", textAlign: "center" }}>
+              <CardContent>
+                <SmartToyIcon sx={{ fontSize: 60, color: "#667eea", mb: 2 }} />
+                <Typography variant="h6" gutterBottom fontWeight="bold">
+                  Natural Language Chat
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Ask questions like "Show me all deadlines this week" and get instant
+                  answers powered by Google Gemini AI.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Card sx={{ height: "100%", textAlign: "center" }}>
+              <CardContent>
+                <EmailIcon sx={{ fontSize: 60, color: "#667eea", mb: 2 }} />
+                <Typography variant="h6" gutterBottom fontWeight="bold">
+                  Smart Email Organization
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  AI categorizes your university emails, extracts deadlines, and
+                  highlights important announcements automatically.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Card sx={{ height: "100%", textAlign: "center" }}>
+              <CardContent>
+                <CalendarTodayIcon sx={{ fontSize: 60, color: "#667eea", mb: 2 }} />
+                <Typography variant="h6" gutterBottom fontWeight="bold">
+                  Deadline Tracking
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Automatically sync assignments and exams from Google Classroom to your
+                  calendar with countdown timers.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Card sx={{ height: "100%", textAlign: "center" }}>
+              <CardContent>
+                <TrendingUpIcon sx={{ fontSize: 60, color: "#667eea", mb: 2 }} />
+                <Typography variant="h6" gutterBottom fontWeight="bold">
+                  Analytics Dashboard
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Visualize your workload with charts, heatmaps, and insights about your
+                  academic activity.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Card sx={{ height: "100%", textAlign: "center" }}>
+              <CardContent>
+                <NotificationsActiveIcon sx={{ fontSize: 60, color: "#667eea", mb: 2 }} />
+                <Typography variant="h6" gutterBottom fontWeight="bold">
+                  Smart Notifications
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Get alerts for schedule changes, exam postponements, and urgent notices
+                  via browser or WhatsApp.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={4}>
+            <Card sx={{ height: "100%", textAlign: "center" }}>
+              <CardContent>
+                <SchoolIcon sx={{ fontSize: 60, color: "#667eea", mb: 2 }} />
+                <Typography variant="h6" gutterBottom fontWeight="bold">
+                  Document Repository
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  All your course PDFs, lecture slides, and materials organized by course
+                  in one searchable place.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      </Container>
+
+      {/* CTA Section */}
+      <Box
+        sx={{
+          backgroundColor: "#667eea",
+          color: "white",
+          py: 8,
+          textAlign: "center",
+        }}
+      >
+        <Container maxWidth="md">
+          <Typography variant="h4" gutterBottom fontWeight="bold">
+            Ready to Get Organized?
+          </Typography>
+          <Typography variant="body1" sx={{ mb: 4 }}>
+            Join students who are using AI to stay on top of their academic life.
+          </Typography>
+          <Button
+            variant="contained"
+            size="large"
+            onClick={signInWithGoogle}
+            sx={{
+              backgroundColor: "white",
+              color: "#667eea",
+              px: 4,
+              py: 1.5,
+              fontSize: "1.1rem",
+              "&:hover": { backgroundColor: "#f0f0f0" },
+            }}
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            Get Started Free
+          </Button>
+        </Container>
+      </Box>
+
+      {/* Footer */}
+      <Box sx={{ backgroundColor: "#2d3748", color: "white", py: 4 }}>
+        <Container maxWidth="lg">
+          <Typography variant="body2" align="center">
+            Built with Next.js, Firebase, Composio, and Google Gemini AI
+          </Typography>
+          <Typography variant="caption" align="center" display="block" sx={{ mt: 1 }}>
+            Hackathon Challenge 5: The Collegiate Inbox Navigator
+          </Typography>
+        </Container>
+      </Box>
+    </Box>
   );
 }
