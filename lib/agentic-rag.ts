@@ -1,5 +1,4 @@
-import { db } from "@/lib/firebase";
-import { collection, doc, setDoc, getDocs, query, where, orderBy, limit, Timestamp, addDoc } from "firebase/firestore";
+import { adminDb } from "@/lib/firebaseAdmin";
 import { generateEmbedding, categorizeEmail, extractDeadlines } from "@/lib/gemini";
 import { executeAction, getConnectedAccountId } from "@/lib/composio";
 
@@ -102,10 +101,12 @@ export async function deadlineAgent(
 
     // Save to Firestore
     for (const deadline of deadlines) {
-      await setDoc(
-        doc(db, "deadlines", userId, "events", deadline.id),
-        deadline
-      );
+      await adminDb
+        .collection("deadlines")
+        .doc(userId)
+        .collection("events")
+        .doc(deadline.id)
+        .set(deadline);
     }
 
     console.log(`[Deadline Agent] Extracted ${deadlines.length} deadlines`);
@@ -152,10 +153,12 @@ export async function documentAgent(
         documents.push(document);
 
         // Save to Firestore
-        await setDoc(
-          doc(db, "documents", userId, "files", document.id),
-          document
-        );
+        await adminDb
+          .collection("documents")
+          .doc(userId)
+          .collection("files")
+          .doc(document.id)
+          .set(document);
       }
     }
 
@@ -207,10 +210,12 @@ export async function alertAgent(
         alerts.push(alert);
 
         // Save to Firestore
-        await setDoc(
-          doc(db, "alerts", userId, "items", alert.id),
-          alert
-        );
+        await adminDb
+          .collection("alerts")
+          .doc(userId)
+          .collection("items")
+          .doc(alert.id)
+          .set(alert);
       }
     }
 
@@ -318,13 +323,12 @@ export async function processEmail(
       createdAt: new Date(),
     };
 
-    await setDoc(
-      doc(db, "email_embeddings", userId, "emails", emailId),
-      {
-        ...emailEmbedding,
-        createdAt: Timestamp.now(),
-      }
-    );
+    await adminDb
+      .collection("email_embeddings")
+      .doc(userId)
+      .collection("emails")
+      .doc(emailId)
+      .set(emailEmbedding);
 
     // 4. Run parallel agents
     const [deadlines, documents, alerts, reminder] = await Promise.all([
@@ -335,11 +339,12 @@ export async function processEmail(
     ]);
 
     // 5. Mark as processed
-    await setDoc(
-      doc(db, "email_embeddings", userId, "emails", emailId),
-      { processed: true },
-      { merge: true }
-    );
+    await adminDb
+      .collection("email_embeddings")
+      .doc(userId)
+      .collection("emails")
+      .doc(emailId)
+      .update({ processed: true });
 
     console.log(`[Pipeline] ✅ Email processed successfully`);
     console.log(`  - Deadlines: ${deadlines.length}`);
@@ -399,9 +404,11 @@ export async function searchEmails(
     }
 
     // Fetch all email embeddings
-    const emailsSnapshot = await getDocs(
-      collection(db, "email_embeddings", userId, "emails")
-    );
+    const emailsSnapshot = await adminDb
+      .collection("email_embeddings")
+      .doc(userId)
+      .collection("emails")
+      .get();
 
     const emails: EmailEmbedding[] = [];
     emailsSnapshot.forEach((doc) => {
@@ -431,12 +438,12 @@ export async function searchEmails(
  * Get all deadlines for dashboard (from Firestore, not API!)
  */
 export async function getDeadlines(userId: string): Promise<Deadline[]> {
-  const snapshot = await getDocs(
-    query(
-      collection(db, "deadlines", userId, "events"),
-      orderBy("dueDate", "asc")
-    )
-  );
+  const snapshot = await adminDb
+    .collection("deadlines")
+    .doc(userId)
+    .collection("events")
+    .orderBy("dueDate", "asc")
+    .get();
 
   return snapshot.docs.map((doc) => doc.data() as Deadline);
 }
@@ -445,12 +452,12 @@ export async function getDeadlines(userId: string): Promise<Deadline[]> {
  * Get all alerts for dashboard
  */
 export async function getAlerts(userId: string): Promise<ScheduleChange[]> {
-  const snapshot = await getDocs(
-    query(
-      collection(db, "alerts", userId, "items"),
-      orderBy("createdAt", "desc")
-    )
-  );
+  const snapshot = await adminDb
+    .collection("alerts")
+    .doc(userId)
+    .collection("items")
+    .orderBy("createdAt", "desc")
+    .get();
 
   return snapshot.docs.map((doc) => doc.data() as ScheduleChange);
 }
@@ -459,9 +466,11 @@ export async function getAlerts(userId: string): Promise<ScheduleChange[]> {
  * Get all documents for dashboard
  */
 export async function getDocuments(userId: string): Promise<Document[]> {
-  const snapshot = await getDocs(
-    collection(db, "documents", userId, "files")
-  );
+  const snapshot = await adminDb
+    .collection("documents")
+    .doc(userId)
+    .collection("files")
+    .get();
 
   return snapshot.docs.map((doc) => doc.data() as Document);
 }

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { executeAction, getConnectedAccountId } from "@/lib/composio";
-import { doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { adminDb } from "@/lib/firebaseAdmin";
 
 /**
  * Calendar Sync API
@@ -78,13 +77,15 @@ export async function POST(req: NextRequest) {
     // Update Firestore to mark deadline as added to calendar
     if (event.id) {
       try {
-        await updateDoc(
-          doc(db, "deadlines", userId, "events", event.id),
-          {
+        await adminDb
+          .collection("deadlines")
+          .doc(userId)
+          .collection("events")
+          .doc(event.id)
+          .update({
             addedToCalendar: true,
             calendarEventId: result.data?.id || result.id,
-          }
-        );
+          });
         console.log(`Updated deadline ${event.id} in Firestore`);
       } catch (firestoreError) {
         console.error("Error updating Firestore:", firestoreError);
