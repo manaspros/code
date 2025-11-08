@@ -32,11 +32,17 @@ export default function IntegrationsPage() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Collegiate Inbox Navigator
           </Typography>
+          <Button color="inherit" component={Link} href="/dashboard">
+            Dashboard
+          </Button>
+          <Button color="inherit" component={Link} href="/inbox">
+            Inbox
+          </Button>
           <Button color="inherit" component={Link} href="/integrations">
             Integrations
           </Button>
-          <Button color="inherit" component={Link} href="/dashboard">
-            Dashboard
+          <Button color="inherit" component={Link} href="/setup">
+            Setup
           </Button>
           <IconButton color="inherit" onClick={signOut}>
             <LogoutIcon />

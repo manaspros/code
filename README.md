@@ -1,29 +1,71 @@
 # Collegiate Inbox Navigator 🎓
 
-An AI-powered academic assistant that helps college students manage their emails, assignments, deadlines, and course materials through a natural language interface powered by **Google Gemini 2.0 Flash** and **Composio**.
+An AI-powered academic assistant that helps college students manage their emails, assignments, deadlines, and course materials through a natural language interface powered by Google Gemini AI and Composio v3.
 
-## 🎯 Overview
+## 🎯 MVP Features (COMPLETE)
 
-This is a self-operating academic assistant with a natural-language chat bar. Students can type commands like:
-- "Show me deadlines this week"
-- "Find PDFs from Machine Learning"
-- "What assignments are due this weekend?"
+### ✅ Secure Gmail Integration
+- Robust OAuth connection to college Gmail account
+- Read and process emails securely
+- Advanced email filtering and search
+- Attachment detection and extraction
+
+### ✅ Critical Path Dashboard
+A single, clean page that summarizes all crucial information:
+
+#### 📅 Upcoming Deadlines
+- List of assignments and exams extracted from emails
+- **Color-coded countdown timers**:
+  - 🔴 Red: Overdue
+  - 🟠 Orange: 0-2 days
+  - 🟡 Yellow: 3-7 days
+  - 🟢 Green: 8+ days
+- Priority indicators (high/medium/low)
+- Course names and descriptions
+- One-click calendar sync
+
+#### 📁 Key Document Repository
+- Automatically identifies and organizes PDFs, DOCX, and PPT files
+- Categorized by course name
+- Filter by course using tabs
+- Direct download functionality
+- Smart categorization (assignments/lectures/notes/syllabus)
+
+#### ⚠️ Schedule Changes/Alerts
+- Dynamic feed of important notices
+- Keyword detection: "Cancelled", "Rescheduled", "Urgent Notice", "Room Change"
+- Course association
+- Visual warning indicators
+
+### ✅ Smart Categorization
+- AI-powered email analysis using Gemini 2.0 Flash
+- Automatic course/subject tagging
+- Intelligent deadline extraction
+- Document type classification
+
+### ✅ One-Click Calendar Sync
+- Instant sync to Google Calendar
+- Automated reminders (1 day + 1 hour before)
+- Event formatting with course and assignment details
+- Success/error notifications
+
+### Core Features ✅
+- **Natural Language Chat Interface**: Ask questions like "Show me all deadlines this week"
+- **Gmail Integration**: Read, search, and manage university emails
+- **Google Classroom Integration**: Access courses, assignments, materials (ready)
+- **Google Calendar Integration**: View and sync deadlines automatically
+- **Google Drive Integration**: Search and access course files (ready)
+- **Composio v3**: Latest integration platform with enhanced stability
 
 The AI agent uses Composio tools to pull data from Gmail, Google Classroom, Google Drive, and Calendar, with one-click sync capabilities.
 
 ## ✨ Features
 
-### 🎯 Core Features
-- ✅ **Natural Language Chat Interface**: Powered by Gemini 2.0 Flash with function calling
-- ✅ **Gmail Integration**: Read, search, and manage university emails
-- ✅ **Google Classroom Integration**: Access courses, assignments, and materials
-- ✅ **Google Calendar Integration**: View and sync deadlines automatically
-- ✅ **Google Drive Integration**: Search and access course files
-- ✅ **Smart Email Categorization**: AI automatically categorizes emails by course
-- ✅ **Critical Path Dashboard**: Organized view of Deadlines, Documents, and Alerts
-- ✅ **Deadline Tracking**: Countdown timers with color-coded urgency
-- ✅ **Document Repository**: Filter by course with course tagging
-- ✅ **Schedule Alerts**: Real-time notifications for cancellations, reschedules
+- **Frontend**: Next.js 16 (React 19), Material-UI v7, TypeScript
+- **Backend**: Next.js API Routes, Firebase Auth & Firestore
+- **AI**: Google Gemini 2.0 Flash Exp
+- **Integrations**: Composio v3 (@composio/core v0.1.55)
+- **Utilities**: date-fns, Recharts, Pinecone (optional), node-cron
 
 ### 🚀 Advanced Features
 - 📊 **Analytics Dashboard**: Recharts visualizations
@@ -170,51 +212,23 @@ Visit `/analytics` to see:
 ## 🏗️ Architecture
 
 ```
-User Query
-    ↓
-Gemini 2.0 Flash (AI Agent)
-    ↓
-Function Calling → Composio Tools
-    ↓
-Google APIs (Gmail, Classroom, Calendar, Drive)
-    ↓
-Formatted Response + Cache in Firestore
+User Gmail → Composio v3 → API Routes → Gemini AI Analysis → Critical Path Dashboard
+                                    ↓
+                            Google Calendar ← One-Click Sync
 ```
 
-### Key Components
-- **`lib/composio.ts`**: Composio client and entity management
-- **`lib/gemini.ts`**: Gemini model and AI utilities
-- **`lib/firebase.ts`**: Firebase initialization
-- **`lib/pinecone.ts`**: Vector search for semantic file search
-- **`app/api/chat/route.ts`**: AI chat endpoint with streaming
-- **`app/api/deadlines/route.ts`**: Aggregate deadlines from multiple sources
-- **`app/api/cron/daily/route.ts`**: Daily 8 AM routine
+**Workflow**:
+1. User connects Gmail via Composio v3 OAuth
+2. System fetches recent emails (last 30 days)
+3. Gemini AI analyzes emails for:
+   - Deadlines (assignments, exams, projects)
+   - Documents (PDFs, DOCX, PPT)
+   - Schedule changes (cancellations, room changes)
+   - Course categorization
+4. Critical Path Dashboard displays organized information
+5. One-click sync adds deadlines to Google Calendar
 
-## 📅 Automated Daily Routine
-
-Every morning at 8 AM, the system:
-1. Clears old caches
-2. Fetches fresh data from Gmail, Classroom, and Calendar
-3. Generates a personalized digest with:
-   - Upcoming deadlines (next 7 days)
-   - Schedule alerts
-   - Important notifications
-4. Sends digest via email (optionally WhatsApp/Slack)
-
-To set up on Vercel:
-```json
-// vercel.json
-{
-  "crons": [
-    {
-      "path": "/api/cron/daily?userId=USER_ID",
-      "schedule": "0 8 * * *"
-    }
-  ]
-}
-```
-
-## 🔔 Push Notifications
+Composio v3 handles secure OAuth and provides 250+ tools. Gemini AI understands natural language and calls the right tools automatically.
 
 Enable browser notifications to receive real-time alerts for:
 - Cancelled classes
@@ -262,61 +276,51 @@ npm install -g vercel
 vercel
 ```
 
-Then:
-1. Add environment variables in Vercel Dashboard
-2. Set up Cron jobs for daily routine
-3. Configure custom domain (optional)
+## 📖 Documentation
 
-### Environment Variables on Vercel
-Add all variables from `.env.local` to Vercel → Settings → Environment Variables
+- **[MVP Implementation Guide](./MVP_IMPLEMENTATION.md)** - Complete documentation of MVP features
+- **[Setup Guide](./SETUP.md)** - Step-by-step installation instructions
+- **[Bug Fixes](./BUGFIXES.md)** - Previous bug fixes and improvements
 
-## 🧪 Testing
+## 🎯 MVP Status
 
-Test the complete flow:
-1. Sign in with Google
-2. Connect all integrations
-3. Test chat with: "Show me deadlines this week"
-4. Check Deadlines tab for data
-5. Visit Analytics page
-6. Try voice commands
-7. Test push notifications (if configured)
+All required features have been implemented and tested:
 
-## 🎯 Success Metrics
+- ✅ Secure Gmail Integration
+- ✅ Critical Path Dashboard
+  - ✅ Upcoming Deadlines with Countdown
+  - ✅ Key Document Repository
+  - ✅ Schedule Changes/Alerts
+- ✅ Smart Categorization with AI
+- ✅ One-Click Calendar Sync
+- ✅ Composio v3 Integration
 
-✅ OAuth connect flow < 2 minutes
-✅ Agent tool calls succeed > 90%
-✅ Dashboard TTFB < 2s (with cache)
-✅ Voice commands accuracy > 85%
-✅ 8 AM routine fires daily with < 1% failures
-✅ Judges can add event to Calendar in ≤ 2 clicks
+## 🚀 What's New in v2.0
 
-## 💰 Cost Estimate (100 active students)
+### Composio v3 Upgrade
+- Migrated from `composio-core` to `@composio/core`
+- Better TypeScript support
+- Enhanced stability and performance
 
-- **Composio Pro**: ~$29/mo (≈10k requests)
-- **Gemini API**: ~$10–15/mo (prompt-light)
-- **Firebase**: ~$5–10/mo (Firestore + Auth)
-- **Pinecone**: Free tier sufficient for POC
-- **Vercel**: Free tier
+### Critical Path Dashboard
+- Brand new dashboard component
+- Real-time email analysis
+- Visual countdown timers
+- Document organization by course
+- Schedule alert monitoring
 
-**Total**: ~$45–55/month
+### AI-Powered Analysis
+- Gemini 2.0 Flash Exp integration
+- Smart deadline extraction
+- Automatic course categorization
+- Document type classification
 
-## 🤝 Contributing
+### Enhanced Calendar Integration
+- One-click event creation
+- Automatic reminder setup
+- Smart event formatting
 
-This project was built for a hackathon challenge. Contributions are welcome!
+Built for Hackathon Challenge 5 with ❤️
 
-## 📄 License
-
-MIT License
-
-## 🙏 Acknowledgments
-
-Built with:
-- [Composio](https://composio.dev) for seamless integrations
-- [Google Gemini](https://ai.google.dev/gemini-api) for AI capabilities
-- [Firebase](https://firebase.google.com) for backend infrastructure
-
----
-
-**Built for Hackathon Challenge 5 with ❤️**
-
-Ready to revolutionize academic productivity! 🚀
+**Version**: 2.0.0 (MVP Complete)
+**Last Updated**: November 8, 2025
