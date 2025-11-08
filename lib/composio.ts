@@ -30,18 +30,33 @@ export async function getConnectionLink(
   redirectUrl?: string
 ) {
   try {
+    // Step 1: Get auth config for the toolkit
+    const authConfigs = await composio.authConfigs.list({
+      toolkit: app,
+    });
+
+    if (!authConfigs.items || authConfigs.items.length === 0) {
+      throw new Error(`No auth config found for toolkit: ${app}. Please create one in the Composio dashboard.`);
+    }
+
+    // Use the first available auth config (preferably Composio-managed)
+    const authConfig = authConfigs.items.find((config: any) => config.isComposioManaged) || authConfigs.items[0];
+
+    console.log(`Using auth config: ${authConfig.id} for toolkit: ${app}`);
+
+    // Step 2: Initiate connection with user_id and auth_config_id
     const connection = await composio.connectedAccounts.initiate(
       firebaseUid,
-      app,
+      authConfig.id, // auth config ID, not app name!
       {
         redirectUrl: redirectUrl || `${process.env.NEXT_PUBLIC_APP_URL}/integrations`,
       }
     );
 
     return connection.redirectUrl;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating connection link:", error);
-    throw error;
+    throw new Error(error.message || "Failed to generate connection link");
   }
 }
 
