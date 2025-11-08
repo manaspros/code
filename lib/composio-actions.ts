@@ -4,49 +4,64 @@
  * This file contains the correct action names for Composio integrations.
  * Use these constants instead of hardcoding action names to avoid typos.
  *
- * Action naming convention: APP_ACTION_NAME
- * Example: GMAIL_SEND_EMAIL, GOOGLECLASSROOM_LIST_COURSES
+ * IMPORTANT: Composio expects lowercase action names with underscores
+ * Example: gmail_send_email, google_classroom_list_courses
  */
 
 // ==================== GMAIL ACTIONS ====================
 export const GMAIL_ACTIONS = {
-  LIST_EMAILS: "GMAIL_LIST_EMAILS",
-  GET_EMAIL: "GMAIL_GET_EMAIL",
-  SEND_EMAIL: "GMAIL_SEND_EMAIL",
-  GET_PROFILE: "GMAIL_GET_PROFILE",
-  CREATE_DRAFT: "GMAIL_CREATE_DRAFT",
-  SEARCH_EMAILS: "GMAIL_SEARCH_EMAILS",
+  LIST_EMAILS: "gmail_list_emails",
+  GET_EMAIL: "gmail_get_email",
+  SEND_EMAIL: "gmail_send_email",
+  GET_PROFILE: "gmail_get_profile",
+  CREATE_DRAFT: "gmail_create_draft",
+  SEARCH_EMAILS: "gmail_search_emails",
 } as const;
 
 // ==================== GOOGLE CLASSROOM ACTIONS ====================
 export const CLASSROOM_ACTIONS = {
-  LIST_COURSES: "GOOGLECLASSROOM_LIST_COURSES",
-  GET_COURSE: "GOOGLECLASSROOM_GET_COURSE",
-  LIST_COURSEWORK: "GOOGLECLASSROOM_LIST_COURSE_WORK",
-  GET_COURSEWORK: "GOOGLECLASSROOM_GET_COURSE_WORK",
-  LIST_STUDENTS: "GOOGLECLASSROOM_LIST_STUDENTS",
-  LIST_SUBMISSIONS: "GOOGLECLASSROOM_LIST_STUDENT_SUBMISSIONS",
+  LIST_COURSES: "google_classroom_list_courses",
+  GET_COURSE: "google_classroom_get_course",
+  LIST_COURSEWORK: "google_classroom_list_course_work",
+  GET_COURSEWORK: "google_classroom_get_course_work",
+  LIST_STUDENTS: "google_classroom_list_students",
+  LIST_SUBMISSIONS: "google_classroom_list_student_submissions",
 } as const;
 
 // ==================== GOOGLE CALENDAR ACTIONS ====================
 export const CALENDAR_ACTIONS = {
-  LIST_EVENTS: "GOOGLECALENDAR_LIST_EVENTS",
-  GET_EVENT: "GOOGLECALENDAR_GET_EVENT",
-  CREATE_EVENT: "GOOGLECALENDAR_CREATE_EVENT",
-  UPDATE_EVENT: "GOOGLECALENDAR_UPDATE_EVENT",
-  DELETE_EVENT: "GOOGLECALENDAR_DELETE_EVENT",
-  LIST_CALENDARS: "GOOGLECALENDAR_LIST_CALENDARS",
+  LIST_EVENTS: "googlecalendar_list_events",
+  GET_EVENT: "googlecalendar_get_event",
+  CREATE_EVENT: "googlecalendar_create_event",
+  UPDATE_EVENT: "googlecalendar_update_event",
+  DELETE_EVENT: "googlecalendar_delete_event",
+  LIST_CALENDARS: "googlecalendar_list_calendars",
 } as const;
 
 // ==================== GOOGLE DRIVE ACTIONS ====================
 export const DRIVE_ACTIONS = {
-  LIST_FILES: "GOOGLEDRIVE_LIST_FILES",
-  GET_FILE: "GOOGLEDRIVE_GET_FILE",
-  SEARCH_FILES: "GOOGLEDRIVE_SEARCH_FILES",
-  DOWNLOAD_FILE: "GOOGLEDRIVE_DOWNLOAD_FILE",
-  CREATE_FILE: "GOOGLEDRIVE_CREATE_FILE",
-  UPDATE_FILE: "GOOGLEDRIVE_UPDATE_FILE",
-  DELETE_FILE: "GOOGLEDRIVE_DELETE_FILE",
+  LIST_FILES: "googledrive_list_files",
+  GET_FILE: "googledrive_get_file",
+  SEARCH_FILES: "googledrive_search_files",
+  DOWNLOAD_FILE: "googledrive_download_file",
+  CREATE_FILE: "googledrive_create_file",
+  UPDATE_FILE: "googledrive_update_file",
+  DELETE_FILE: "googledrive_delete_file",
+} as const;
+
+// ==================== APP NAMES ====================
+// Use these when connecting integrations
+export const APP_NAMES = {
+  GMAIL: "gmail",
+  GOOGLE_CLASSROOM: "google_classroom", // Note: underscore, not googleclassroom
+  GOOGLE_CALENDAR: "googlecalendar", // Note: no underscore
+  GOOGLE_DRIVE: "googledrive", // Note: no underscore
+  GOOGLE_SHEETS: "googlesheets",
+  GOOGLE_MEET: "googlemeet",
+  GOOGLE_DOCS: "googledocs",
+  NOTION: "notion",
+  WHATSAPP: "whatsapp",
+  LINKEDIN: "linkedin",
 } as const;
 
 // ==================== HELPER FUNCTIONS ====================

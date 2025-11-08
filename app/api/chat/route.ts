@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { streamText } from "ai";
 import { google } from "@ai-sdk/google";
 import { getToolsForEntity } from "@/lib/composio";
+import { APP_NAMES } from "@/lib/composio-actions";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,10 +14,10 @@ export async function POST(req: NextRequest) {
 
     // Get Composio tools for the user (Gmail, Classroom, Calendar, Drive)
     const tools = await getToolsForEntity(userId, [
-      "gmail",
-      "googleclassroom",
-      "googlecalendar",
-      "googledrive",
+      APP_NAMES.GMAIL,
+      APP_NAMES.GOOGLE_CLASSROOM, // google_classroom (with underscore)
+      APP_NAMES.GOOGLE_CALENDAR,
+      APP_NAMES.GOOGLE_DRIVE,
     ]);
 
     // System prompt to guide the AI

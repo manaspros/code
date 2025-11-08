@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserConnections } from "@/lib/composio";
+import { APP_NAMES } from "@/lib/composio-actions";
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,12 +14,12 @@ export async function GET(req: NextRequest) {
 
     // Define available apps
     const availableApps = [
-      "gmail",
-      "googleclassroom",
-      "googlecalendar",
-      "googledrive",
-      "whatsapp",
-      "telegram",
+      APP_NAMES.GMAIL,
+      APP_NAMES.GOOGLE_CLASSROOM, // google_classroom (with underscore!)
+      APP_NAMES.GOOGLE_CALENDAR,
+      APP_NAMES.GOOGLE_DRIVE,
+      APP_NAMES.WHATSAPP,
+      "telegram", // Not in APP_NAMES yet
     ];
 
     // Map connections to integration status

@@ -4,6 +4,7 @@ import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore"
 import { db } from "@/lib/firebase";
 import { getGeminiModel } from "@/lib/gemini";
 import { format } from "date-fns";
+import { CLASSROOM_ACTIONS, GMAIL_ACTIONS, executeComposioAction } from "@/lib/composio-actions";
 
 /**
  * Daily 8 AM Routine
@@ -82,13 +83,19 @@ async function fetchFreshData(entity: any, userId: string) {
 
   // Fetch Classroom assignments
   try {
-    const coursesResult = await entity.execute("googleclassroom_list_courses", {});
+    const coursesResult = await executeComposioAction(
+      entity,
+      CLASSROOM_ACTIONS.LIST_COURSES,
+      {}
+    );
     const courses = coursesResult.data?.courses || [];
 
     for (const course of courses.slice(0, 5)) {
-      const assignmentsResult = await entity.execute("googleclassroom_list_coursework", {
-        courseId: course.id,
-      });
+      const assignmentsResult = await executeComposioAction(
+        entity,
+        CLASSROOM_ACTIONS.LIST_COURSEWORK,
+        { courseId: course.id }
+      );
 
       const assignments = assignmentsResult.data?.courseWork || [];
       for (const assignment of assignments) {
@@ -124,10 +131,14 @@ async function fetchFreshData(entity: any, userId: string) {
 
   // Fetch Gmail attachments
   try {
-    const gmailResult = await entity.execute("gmail_list_emails", {
-      query: "has:attachment",
-      maxResults: 20,
-    });
+    const gmailResult = await executeComposioAction(
+      entity,
+      GMAIL_ACTIONS.LIST_EMAILS,
+      {
+        query: "has:attachment",
+        maxResults: 20,
+      }
+    );
 
     const emails = gmailResult.data?.messages || [];
     for (const email of emails) {
@@ -156,10 +167,14 @@ async function fetchFreshData(entity: any, userId: string) {
   // Fetch alerts (schedule changes)
   try {
     const alertKeywords = "cancelled OR rescheduled OR urgent OR room change";
-    const gmailResult = await entity.execute("gmail_list_emails", {
-      query: alertKeywords,
-      maxResults: 10,
-    });
+    const gmailResult = await executeComposioAction(
+      entity,
+      GMAIL_ACTIONS.LIST_EMAILS,
+      {
+        query: alertKeywords,
+        maxResults: 10,
+      }
+    );
 
     const emails = gmailResult.data?.messages || [];
     const model = getGeminiModel();
@@ -239,11 +254,15 @@ async function generateDigest(userId: string, deadlines: any[], alerts: any[]) {
 async function sendNotifications(entity: any, userId: string, digest: string) {
   try {
     // Send via Gmail (send email to self)
-    await entity.execute("gmail_send_email", {
-      to: "me",
-      subject: `Daily Academic Digest - ${format(new Date(), "MMM d, yyyy")}`,
-      body: digest,
-    });
+    await executeComposioAction(
+      entity,
+      GMAIL_ACTIONS.SEND_EMAIL,
+      {
+        to: "me",
+        subject: `Daily Academic Digest - ${format(new Date(), "MMM d, yyyy")}`,
+        body: digest,
+      }
+    );
 
     console.log("Digest email sent successfully");
 

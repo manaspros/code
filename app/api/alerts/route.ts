@@ -3,6 +3,7 @@ import { getComposioEntity } from "@/lib/composio";
 import { collection, getDocs, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getGeminiModel } from "@/lib/gemini";
+import { GMAIL_ACTIONS, CALENDAR_ACTIONS, executeComposioAction } from "@/lib/composio-actions";
 
 export async function GET(req: NextRequest) {
   try {
@@ -42,10 +43,14 @@ export async function GET(req: NextRequest) {
     // Fetch recent Gmail messages with alert keywords
     try {
       const query = keywords.join(" OR ");
-      const gmailResult = await entity.execute("gmail_list_emails", {
-        query,
-        maxResults: 15,
-      });
+      const gmailResult = await executeComposioAction(
+        entity,
+        GMAIL_ACTIONS.LIST_EMAILS,
+        {
+          query,
+          maxResults: 15,
+        }
+      );
 
       const emails = gmailResult.data?.messages || [];
 
@@ -90,10 +95,14 @@ Snippet: ${email.snippet || ""}`;
 
     // Fetch Google Calendar for cancelled/rescheduled events
     try {
-      const calendarResult = await entity.execute("googlecalendar_list_events", {
-        maxResults: 20,
-        timeMin: new Date().toISOString(),
-      });
+      const calendarResult = await executeComposioAction(
+        entity,
+        CALENDAR_ACTIONS.LIST_EVENTS,
+        {
+          maxResults: 20,
+          timeMin: new Date().toISOString(),
+        }
+      );
 
       const events = calendarResult.data?.items || [];
       for (const event of events) {

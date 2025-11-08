@@ -36,7 +36,7 @@ const integrationInfo = [
     color: "#EA4335",
   },
   {
-    name: "googleclassroom",
+    name: "google_classroom", // Note: must match Composio's app name
     label: "Google Classroom",
     icon: SchoolIcon,
     description: "View courses, assignments, and grades",

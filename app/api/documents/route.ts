@@ -3,6 +3,7 @@ import { getComposioEntity } from "@/lib/composio";
 import { collection, query, where, getDocs, addDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { categorizeEmail } from "@/lib/gemini";
+import { GMAIL_ACTIONS, DRIVE_ACTIONS, executeComposioAction } from "@/lib/composio-actions";
 
 export async function GET(req: NextRequest) {
   try {
@@ -29,10 +30,14 @@ export async function GET(req: NextRequest) {
 
     // Fetch Gmail attachments
     try {
-      const gmailResult = await entity.execute("gmail_list_emails", {
-        query: "has:attachment",
-        maxResults: 20,
-      });
+      const gmailResult = await executeComposioAction(
+        entity,
+        GMAIL_ACTIONS.LIST_EMAILS,
+        {
+          query: "has:attachment",
+          maxResults: 20,
+        }
+      );
 
       const emails = gmailResult.data?.messages || [];
       for (const email of emails) {
@@ -76,10 +81,14 @@ export async function GET(req: NextRequest) {
 
     // Fetch Google Drive files (from specific folders if available)
     try {
-      const driveResult = await entity.execute("googledrive_list_files", {
-        query: "mimeType='application/pdf' or mimeType contains 'document' or mimeType contains 'presentation'",
-        pageSize: 50,
-      });
+      const driveResult = await executeComposioAction(
+        entity,
+        DRIVE_ACTIONS.LIST_FILES,
+        {
+          query: "mimeType='application/pdf' or mimeType contains 'document' or mimeType contains 'presentation'",
+          pageSize: 50,
+        }
+      );
 
       const files = driveResult.data?.files || [];
       for (const file of files) {
