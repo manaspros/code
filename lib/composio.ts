@@ -132,9 +132,14 @@ export async function executeAction(
   connectedAccountId?: string
 ) {
   try {
+    console.log(`\n=== Executing ${action} ===`);
+    console.log(`User ID: ${firebaseUid}`);
+    console.log(`Connected Account ID: ${connectedAccountId || 'auto-detect'}`);
+    console.log(`Parameters:`, JSON.stringify(params, null, 2));
+
     // Build execution parameters
     const executeParams: any = {
-      arguments: params,
+      input: params, // v3 uses 'input' not 'arguments'
     };
 
     // Option 1: Use existing connectedAccountId (fastest, no OAuth needed)
@@ -146,14 +151,17 @@ export async function executeAction(
       executeParams.userId = firebaseUid;
     }
 
-    console.log(`Executing ${action} with params:`, JSON.stringify(executeParams, null, 2));
-
     const result = await composio.tools.execute(action, executeParams);
 
-    console.log(`Result for ${action}:`, result);
+    console.log(`✅ Success for ${action}:`, JSON.stringify(result, null, 2));
     return result;
   } catch (error: any) {
-    console.error(`Error executing action ${action}:`, error);
+    console.error(`❌ Error executing action ${action}:`, error);
+    console.error(`Error details:`, {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+    });
     throw error;
   }
 }
