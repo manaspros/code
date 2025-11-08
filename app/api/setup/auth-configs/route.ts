@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     // List of toolkits we need
     const requiredToolkits = [
       { name: "gmail", label: "Gmail" },
-      { name: "googleclassroom", label: "Google Classroom" },
+      { name: "google_classroom", label: "Google Classroom" },
       { name: "googlecalendar", label: "Google Calendar" },
       { name: "googledrive", label: "Google Drive" },
     ];

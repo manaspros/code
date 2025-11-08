@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     // Define available apps
     const availableApps = [
       "gmail",
-      "googleclassroom",
+      "google_classroom",
       "googlecalendar",
       "googledrive",
       "telegram",

@@ -343,19 +343,93 @@ export default function InboxPage() {
                 <Box
                   sx={{
                     mt: 3,
-                    p: 2,
-                    backgroundColor: "#f0f7ff",
-                    borderRadius: 2,
+                    p: 3,
+                    background: "linear-gradient(135deg, #f0f7ff 0%, #e3f2fd 100%)",
+                    borderRadius: 3,
                     border: "1px solid #2196f3",
+                    boxShadow: "0 2px 8px rgba(33, 150, 243, 0.1)",
                   }}
                 >
-                  <Typography variant="subtitle2" color="primary" gutterBottom sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography
+                    variant="subtitle1"
+                    color="primary"
+                    gutterBottom
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      fontWeight: 600,
+                      mb: 2,
+                    }}
+                  >
                     <AutoAwesomeIcon fontSize="small" />
-                    AI Summary
+                    AI-Generated Summary
                   </Typography>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    {summary}
-                  </Typography>
+                  <Box
+                    sx={{
+                      "& h2": {
+                        fontSize: "1.1rem",
+                        fontWeight: 600,
+                        color: "#1976d2",
+                        mt: 2,
+                        mb: 1,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                      },
+                      "& h3": {
+                        fontSize: "0.95rem",
+                        fontWeight: 600,
+                        color: "#424242",
+                        mt: 1.5,
+                        mb: 0.75,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                      },
+                      "& p": {
+                        fontSize: "0.875rem",
+                        lineHeight: 1.6,
+                        color: "#666",
+                        mb: 1,
+                      },
+                      "& ul, & ol": {
+                        pl: 2,
+                        mb: 1,
+                      },
+                      "& li": {
+                        fontSize: "0.875rem",
+                        lineHeight: 1.6,
+                        color: "#666",
+                        mb: 0.5,
+                      },
+                      "& em": {
+                        color: "#999",
+                        fontStyle: "italic",
+                      },
+                      "& strong": {
+                        color: "#333",
+                        fontWeight: 600,
+                      },
+                      "& hr": {
+                        border: "none",
+                        borderTop: "1px solid #e0e0e0",
+                        my: 2,
+                      },
+                    }}
+                    dangerouslySetInnerHTML={{
+                      __html: summary
+                        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+                        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/_(.+?)_/g, '<em>$1</em>')
+                        .replace(/^- (.+)$/gm, '<li>$1</li>')
+                        .replace(/^• (.+)$/gm, '<li>$1</li>')
+                        .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+                        .replace(/^---$/gm, '<hr>')
+                        .replace(/\n/g, '<br>')
+                    }}
+                  />
                 </Box>
               )}
             </DialogContent>

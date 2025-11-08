@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Get or use provided connected account ID
-    const accountId = connectedAccountId || await getConnectedAccountId(userId, "googleclassroom");
+    const accountId = connectedAccountId || await getConnectedAccountId(userId, "google_classroom");
 
     if (!accountId) {
       return NextResponse.json(

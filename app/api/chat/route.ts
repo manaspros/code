@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     // Get Composio tools for the user (Gmail, Classroom, Calendar, Drive)
     const tools = await getToolsForEntity(userId, [
       "gmail",
-      "googleclassroom",
+      "google_classroom",
       "googlecalendar",
       "googledrive",
     ]);

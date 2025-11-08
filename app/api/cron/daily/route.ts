@@ -82,11 +82,11 @@ async function fetchFreshData(entity: any, userId: string) {
 
   // Fetch Classroom assignments
   try {
-    const coursesResult = await entity.execute("googleclassroom_list_courses", {});
+    const coursesResult = await entity.execute("GOOGLECLASSROOM_LIST_COURSES", {});
     const courses = coursesResult.data?.courses || [];
 
     for (const course of courses.slice(0, 5)) {
-      const assignmentsResult = await entity.execute("googleclassroom_list_coursework", {
+      const assignmentsResult = await entity.execute("GOOGLECLASSROOM_LIST_COURSEWORK", {
         courseId: course.id,
       });
 

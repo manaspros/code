@@ -22,7 +22,7 @@ export default function ChatInterface() {
   const { user } = useFirebaseAuth();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error } =
+  const { messages, input, handleInputChange, handleSubmit, isLoading, error, setInput } =
     useChat({
       api: "/api/chat",
       body: {
@@ -32,6 +32,15 @@ export default function ChatInterface() {
         console.error("Chat error:", error);
       },
     });
+
+  // Explicit input change handler
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (handleInputChange) {
+      handleInputChange(e);
+    } else if (setInput) {
+      setInput(e.target.value);
+    }
+  };
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {

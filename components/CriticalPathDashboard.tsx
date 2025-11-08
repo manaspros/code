@@ -81,10 +81,37 @@ export default function CriticalPathDashboard() {
   });
   const [selectedTab, setSelectedTab] = useState(0);
   const [syncingEvent, setSyncingEvent] = useState<string | null>(null);
+  const [lastFetch, setLastFetch] = useState<number | null>(null);
+
+  // Cache key for localStorage
+  const CACHE_KEY = (userId: string) => `dashboard_analysis_${userId}`;
+  const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
   // Fetch and analyze emails
-  const fetchAnalysis = async () => {
+  const fetchAnalysis = async (forceRefresh = false) => {
     if (!user) return;
+
+    // Check cache first (unless force refresh)
+    if (!forceRefresh) {
+      const cached = localStorage.getItem(CACHE_KEY(user.uid));
+      if (cached) {
+        try {
+          const { data, timestamp } = JSON.parse(cached);
+          const age = Date.now() - timestamp;
+
+          // Use cache if less than 30 minutes old
+          if (age < CACHE_DURATION) {
+            console.log(`Using cached data (${Math.round(age / 1000 / 60)} minutes old)`);
+            setAnalysisData(data);
+            setLastFetch(timestamp);
+            setLoading(false);
+            return;
+          }
+        } catch (e) {
+          console.error("Cache parse error:", e);
+        }
+      }
+    }
 
     setLoading(true);
     setError(null);
@@ -93,7 +120,10 @@ export default function CriticalPathDashboard() {
       const response = await fetch("/api/gmail/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.uid, maxEmails: 100 }),
+        body: JSON.stringify({
+          userId: user.uid,
+          maxEmails: 50  // Reduced from 100 to save quota
+        }),
       });
 
       const data = await response.json();
@@ -102,7 +132,15 @@ export default function CriticalPathDashboard() {
         throw new Error(data.error || "Failed to analyze emails");
       }
 
+      // Save to cache
+      const timestamp = Date.now();
+      localStorage.setItem(
+        CACHE_KEY(user.uid),
+        JSON.stringify({ data: data.analysis, timestamp })
+      );
+
       setAnalysisData(data.analysis);
+      setLastFetch(timestamp);
     } catch (err: any) {
       setError(err.message);
       console.error("Error fetching analysis:", err);
@@ -200,13 +238,20 @@ export default function CriticalPathDashboard() {
     <Box>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Typography variant="h4" fontWeight="bold">
-          📊 Critical Path Dashboard
-        </Typography>
+        <Box>
+          <Typography variant="h4" fontWeight="bold">
+            📊 Critical Path Dashboard
+          </Typography>
+          {lastFetch && (
+            <Typography variant="caption" color="text.secondary">
+              Last updated: {formatDistanceToNow(lastFetch, { addSuffix: true })}
+            </Typography>
+          )}
+        </Box>
         <Button
           variant="outlined"
           startIcon={<RefreshIcon />}
-          onClick={fetchAnalysis}
+          onClick={() => fetchAnalysis(true)}
           disabled={loading}
         >
           Refresh

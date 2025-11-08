@@ -19,22 +19,37 @@ export async function POST(req: NextRequest) {
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-    const prompt = `You are an AI email summarization assistant for college students.
+    const prompt = `You are a professional AI email assistant designed for college students. Analyze the following email and provide a clean, well-structured summary.
 
-Please provide a concise, helpful summary of the following email:
+**Email Details:**
+- **Subject:** ${subject}
+- **From:** ${from}
+- **Content:** ${body}
 
-**Subject:** ${subject}
-**From:** ${from}
+Generate a professional summary using this EXACT format:
 
-**Email Body:**
-${body}
+## 📧 Email Summary
 
-Provide a summary that includes:
-1. **Main Purpose**: What is the email about in 1-2 sentences
-2. **Action Items**: Any tasks, deadlines, or actions required (if any)
-3. **Important Details**: Key dates, requirements, or information
+### 🎯 Main Purpose
+[Provide a clear, concise explanation of the email's primary purpose in 1-2 sentences]
 
-Keep the summary concise (3-5 sentences max) and focus on what's important for a student.`;
+### ✅ Action Items
+${body.toLowerCase().includes('action') || body.toLowerCase().includes('deadline') || body.toLowerCase().includes('submit') || body.toLowerCase().includes('check') ?
+  '[List specific actions required with bullet points]' :
+  '_No immediate action required._'}
+
+### 📌 Key Details
+[Highlight the most important information, dates, requirements, or context the student should be aware of]
+
+---
+
+**Guidelines:**
+- Use clear, professional language
+- Be concise but informative (3-5 sentences total)
+- Use bullet points (•) for multiple items
+- Use _italics_ for "No action required" or "None"
+- Focus on student-relevant information
+- Include specific dates/times if mentioned`;
 
     const result = await model.generateContent(prompt);
     const summary = result.response.text();

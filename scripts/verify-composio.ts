@@ -10,7 +10,7 @@ async function verifyComposioSetup() {
 
   const requiredApps = [
     "gmail",
-    "googleclassroom",
+    "google_classroom",
     "googlecalendar",
     "googledrive",
   ];

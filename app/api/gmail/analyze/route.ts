@@ -39,7 +39,22 @@ export async function POST(req: NextRequest) {
       accountId // Pass connected account ID
     );
 
-    const emails = emailsResult.data || emailsResult || [];
+    // Extract messages array from response
+    const emails = emailsResult.data?.messages || emailsResult.messages || [];
+
+    if (!Array.isArray(emails) || emails.length === 0) {
+      return NextResponse.json({
+        success: true,
+        analysis: {
+          deadlines: [],
+          scheduleChanges: [],
+          documents: [],
+          categorization: {}
+        },
+        totalEmailsAnalyzed: 0,
+        message: "No emails found to analyze"
+      });
+    }
 
     // Initialize Gemini AI for analysis
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
