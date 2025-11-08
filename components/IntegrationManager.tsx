@@ -12,6 +12,8 @@ import {
   Box,
   CircularProgress,
   Chip,
+  Alert,
+  AlertTitle,
 } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import SchoolIcon from "@mui/icons-material/School";
@@ -19,6 +21,8 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import FolderIcon from "@mui/icons-material/Folder";
 import TelegramIcon from "@mui/icons-material/Telegram";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import SettingsIcon from "@mui/icons-material/Settings";
+import Link from "next/link";
 
 interface Integration {
   name: string;
@@ -69,6 +73,8 @@ export default function IntegrationManager() {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loading, setLoading] = useState(true);
   const [connectingApp, setConnectingApp] = useState<string | null>(null);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [showSetupAlert, setShowSetupAlert] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -104,6 +110,7 @@ export default function IntegrationManager() {
 
     try {
       setConnectingApp(appName);
+      setConnectionError(null);
       const res = await fetch("/api/integrations/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -114,15 +121,25 @@ export default function IntegrationManager() {
         }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("Failed to initiate connection");
+        // Check if error is due to missing auth config
+        if (data.error?.includes("No auth config found") ||
+            data.error?.includes("Available toolkits:")) {
+          setShowSetupAlert(true);
+          setConnectionError("Auth configs not set up. Please run the setup wizard first.");
+        } else {
+          setConnectionError(data.error || "Failed to initiate connection");
+        }
+        throw new Error(data.error || "Failed to initiate connection");
       }
 
-      const { connectionUrl } = await res.json();
+      const { connectionUrl } = data;
 
       // Redirect to Composio OAuth page
       window.location.href = connectionUrl;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Connection error:", error);
       setConnectingApp(null);
     }
@@ -172,13 +189,59 @@ export default function IntegrationManager() {
 
   return (
     <Box>
+      {/* Setup Alert */}
+      {showSetupAlert && (
+        <Alert
+          severity="warning"
+          sx={{ mb: 3 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              component={Link}
+              href="/setup"
+              startIcon={<SettingsIcon />}
+            >
+              Run Setup
+            </Button>
+          }
+          onClose={() => setShowSetupAlert(false)}
+        >
+          <AlertTitle>Auth Configs Not Found</AlertTitle>
+          Looks like you haven't set up auth configs yet. Click "Run Setup" to automatically configure them.
+        </Alert>
+      )}
+
+      {/* Connection Error */}
+      {connectionError && !showSetupAlert && (
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          onClose={() => setConnectionError(null)}
+        >
+          {connectionError}
+        </Alert>
+      )}
+
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h5" gutterBottom>
-          Connect Your Apps
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Connect your Google accounts and messaging apps to enable AI-powered features
-        </Typography>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+          <Box>
+            <Typography variant="h5" gutterBottom>
+              Connect Your Apps
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Connect your Google accounts and messaging apps to enable AI-powered features
+            </Typography>
+          </Box>
+          <Button
+            variant="outlined"
+            startIcon={<SettingsIcon />}
+            component={Link}
+            href="/setup"
+          >
+            Setup Wizard
+          </Button>
+        </Box>
       </Box>
 
       <Grid container spacing={3}>
