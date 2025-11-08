@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getComposioEntity } from "@/lib/composio";
+import { executeAction } from "@/lib/composio";
 
 /**
  * API endpoint to fetch Gmail emails with filtering
@@ -16,17 +16,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const entity = await getComposioEntity(userId);
-
-    // Fetch emails using Gmail API through Composio
-    const result = await entity.execute("GMAIL_LIST_EMAILS", {
+    // Fetch emails using Gmail API through Composio v3
+    const result = await executeAction(userId, "GMAIL_LIST_EMAILS", {
       query: query || "is:unread", // Default to unread emails
       maxResults,
     });
 
     return NextResponse.json({
       success: true,
-      emails: result.data || [],
+      emails: result.data || result || [],
     });
   } catch (error: any) {
     console.error("Error fetching Gmail emails:", error);

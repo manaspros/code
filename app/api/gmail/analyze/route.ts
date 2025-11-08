@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getComposioEntity } from "@/lib/composio";
+import { executeAction } from "@/lib/composio";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 /**
@@ -16,15 +16,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const entity = await getComposioEntity(userId);
-
-    // Fetch recent emails from college domain
-    const emailsResult = await entity.execute("GMAIL_LIST_EMAILS", {
+    // Fetch recent emails from college domain using Composio v3
+    const emailsResult = await executeAction(userId, "GMAIL_LIST_EMAILS", {
       query: "newer_than:30d",
       maxResults: maxEmails,
     });
 
-    const emails = emailsResult.data || [];
+    const emails = emailsResult.data || emailsResult || [];
 
     // Initialize Gemini AI for analysis
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);

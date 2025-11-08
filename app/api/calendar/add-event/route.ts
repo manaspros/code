@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getComposioEntity } from "@/lib/composio";
+import { executeAction } from "@/lib/composio";
 
 /**
  * API endpoint to add events to Google Calendar (one-click sync)
@@ -15,10 +15,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const entity = await getComposioEntity(userId);
-
-    // Create calendar event using Composio
-    const result = await entity.execute("GOOGLECALENDAR_CREATE_EVENT", {
+    // Create calendar event using Composio v3
+    const result = await executeAction(userId, "GOOGLECALENDAR_CREATE_EVENT", {
       summary: event.title,
       description: event.description || "",
       start: {
@@ -40,7 +38,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      event: result.data,
+      event: result.data || result,
     });
   } catch (error: any) {
     console.error("Error adding calendar event:", error);

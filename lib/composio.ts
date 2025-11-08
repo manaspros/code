@@ -5,25 +5,17 @@ export const composio = new Composio({
   apiKey: process.env.COMPOSIO_API_KEY!,
 });
 
-// Get or create entity for a Firebase user
-// Composio automatically creates entities if they don't exist
-export async function getComposioEntity(firebaseUid: string) {
-  try {
-    const entity = await composio.getEntity(firebaseUid);
-    return entity;
-  } catch (error: any) {
-    console.error("Error getting/creating Composio entity:", error);
-    throw error;
-  }
-}
-
 // Check if user has connected an app
 export async function hasConnection(firebaseUid: string, app: string) {
   try {
-    const entity = await getComposioEntity(firebaseUid);
-    const connections = await entity.getConnections();
-    return connections.some(
-      (conn: any) => conn.appName.toLowerCase() === app.toLowerCase() && conn.status === "ACTIVE"
+    const connections = await composio.connectedAccounts.list({
+      userIds: [firebaseUid],
+    });
+
+    return connections.items.some(
+      (conn: any) =>
+        conn.toolkitSlug?.toLowerCase() === app.toLowerCase() &&
+        conn.status === "ACTIVE"
     );
   } catch (error) {
     console.error("Error checking connection:", error);
@@ -38,11 +30,14 @@ export async function getConnectionLink(
   redirectUrl?: string
 ) {
   try {
-    const entity = await getComposioEntity(firebaseUid);
-    const connection = await entity.initiateConnection({
-      appName: app,
-      redirectUrl: redirectUrl || `${process.env.NEXT_PUBLIC_APP_URL}/integrations`,
-    });
+    const connection = await composio.connectedAccounts.initiate(
+      firebaseUid,
+      app,
+      {
+        redirectUrl: redirectUrl || `${process.env.NEXT_PUBLIC_APP_URL}/integrations`,
+      }
+    );
+
     return connection.redirectUrl;
   } catch (error) {
     console.error("Error generating connection link:", error);
@@ -53,9 +48,10 @@ export async function getConnectionLink(
 // Get list of all user connections
 export async function getUserConnections(firebaseUid: string) {
   try {
-    const entity = await getComposioEntity(firebaseUid);
-    const connections = await entity.getConnections();
-    return connections;
+    const connections = await composio.connectedAccounts.list({
+      userIds: [firebaseUid],
+    });
+    return connections.items || [];
   } catch (error) {
     console.error("Error fetching connections:", error);
     return [];
@@ -65,8 +61,7 @@ export async function getUserConnections(firebaseUid: string) {
 // Disconnect an app
 export async function disconnectApp(firebaseUid: string, connectionId: string) {
   try {
-    const entity = await getComposioEntity(firebaseUid);
-    await entity.deleteConnection(connectionId);
+    await composio.connectedAccounts.delete(connectionId);
     return true;
   } catch (error) {
     console.error("Error disconnecting app:", error);
@@ -74,15 +69,18 @@ export async function disconnectApp(firebaseUid: string, connectionId: string) {
   }
 }
 
-// Execute an action with Composio
+// Execute an action with Composio v3
 export async function executeAction(
   firebaseUid: string,
   action: string,
   params: any = {}
 ) {
   try {
-    const entity = await getComposioEntity(firebaseUid);
-    const result = await entity.execute(action, params);
+    const result = await composio.tools.execute(
+      action,
+      params,
+      firebaseUid
+    );
     return result;
   } catch (error) {
     console.error("Error executing action:", error);
@@ -90,13 +88,12 @@ export async function executeAction(
   }
 }
 
-// Get tools for AI agent
+// Get tools for AI agent using v3 API
 export async function getToolsForEntity(firebaseUid: string, apps: string[]) {
   try {
-    const toolset = composio.getToolSet();
-    const tools = await toolset.getTools({
-      apps,
-      entityId: firebaseUid,
+    const tools = await composio.tools.get({
+      toolkits: apps,
+      userId: firebaseUid,
     });
     return tools;
   } catch (error) {
