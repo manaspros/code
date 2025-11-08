@@ -38,6 +38,9 @@ export default function IntegrationsPage() {
           <Button color="inherit" component={Link} href="/dashboard">
             Dashboard
           </Button>
+          <Button color="inherit" component={Link} href="/inbox">
+            Inbox
+          </Button>
           <IconButton color="inherit" onClick={signOut}>
             <LogoutIcon />
           </IconButton>

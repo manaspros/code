@@ -40,6 +40,9 @@ export default function Dashboard() {
           <Button color="inherit" component={Link} href="/dashboard">
             Dashboard
           </Button>
+          <Button color="inherit" component={Link} href="/inbox">
+            Inbox
+          </Button>
           <IconButton color="inherit" onClick={signOut}>
             <LogoutIcon />
           </IconButton>
@@ -74,6 +77,9 @@ export default function Dashboard() {
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 1, mt: 2 }}>
                   <Button variant="outlined" fullWidth component={Link} href="/integrations">
                     Connect Apps
+                  </Button>
+                  <Button variant="outlined" fullWidth component={Link} href="/inbox">
+                    View Gmail Inbox
                   </Button>
                   <Button variant="outlined" fullWidth disabled>
                     View Analytics (Coming Soon)
