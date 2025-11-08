@@ -17,24 +17,29 @@ export async function GET(req: NextRequest) {
       "googleclassroom",
       "googlecalendar",
       "googledrive",
-      "whatsapp",
       "telegram",
     ];
 
+    console.log("Fetched connections:", JSON.stringify(connections, null, 2));
+
     // Map connections to integration status
-    const integrations = availableApps.map((app) => ({
-      name: app,
-      connected: connections.some(
+    // Composio v3 uses toolkitSlug instead of appName
+    const integrations = availableApps.map((app) => {
+      const connection = connections.find(
         (conn: any) =>
-          conn.appName.toLowerCase() === app.toLowerCase() &&
+          (conn.toolkitSlug?.toLowerCase() === app.toLowerCase() ||
+           conn.appName?.toLowerCase() === app.toLowerCase()) &&
           conn.status === "ACTIVE"
-      ),
-      connection: connections.find(
-        (conn: any) =>
-          conn.appName.toLowerCase() === app.toLowerCase() &&
-          conn.status === "ACTIVE"
-      ),
-    }));
+      );
+
+      return {
+        name: app,
+        connected: !!connection,
+        connection: connection,
+      };
+    });
+
+    console.log("Mapped integrations:", integrations);
 
     return NextResponse.json({ integrations });
   } catch (error: any) {
