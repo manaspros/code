@@ -26,7 +26,10 @@ export async function POST(req: NextRequest) {
       try {
         // Check if auth config already exists for this toolkit
         const existing = existingConfigs.items?.find(
-          (config: any) => config.toolkitSlug?.toLowerCase() === toolkit.name.toLowerCase()
+          (config: any) => {
+            const slug = config.toolkitSlug || config.toolkit?.slug || config.toolkit;
+            return slug?.toLowerCase() === toolkit.name.toLowerCase();
+          }
         );
 
         if (existing) {

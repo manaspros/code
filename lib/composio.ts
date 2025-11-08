@@ -225,9 +225,9 @@ export async function getConnectedAccountId(
 // Get tools for AI agent using v3 API
 export async function getToolsForEntity(firebaseUid: string, apps: string[]) {
   try {
-    const tools = await composio.tools.get({
+    // Correct v3 API syntax: composio.tools.get(userId, { toolkits })
+    const tools = await composio.tools.get(firebaseUid, {
       toolkits: apps,
-      userId: firebaseUid,
     });
     return tools;
   } catch (error) {
