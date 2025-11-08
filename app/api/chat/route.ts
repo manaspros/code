@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { streamText } from "ai";
 import { google } from "@ai-sdk/google";
-import { getToolsForEntity } from "@/lib/composio";
-import { APP_NAMES } from "@/lib/composio-actions";
+import { getToolsForEntity, executeAction, getConnectedAccountId } from "@/lib/composio";
+import { APP_NAMES, GMAIL_ACTIONS } from "@/lib/composio-actions";
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,7 +20,37 @@ export async function POST(req: NextRequest) {
       APP_NAMES.GOOGLE_DRIVE,
     ]);
 
-    // System prompt to guide the AI
+    // RAG: Fetch recent emails for context
+    let emailContext = "";
+    try {
+      const gmailAccountId = await getConnectedAccountId(userId, "gmail");
+      if (gmailAccountId) {
+        console.log("Fetching emails for RAG context...");
+        const emailsResult = await executeAction(
+          userId,
+          GMAIL_ACTIONS.LIST_EMAILS, // Use lowercase action name
+          {
+            query: "newer_than:30d",
+            maxResults: 50,
+          },
+          gmailAccountId
+        );
+
+        const emails = emailsResult.data?.messages || emailsResult.messages || [];
+        if (emails.length > 0) {
+          emailContext = `\n\n**RECENT EMAIL CONTEXT (Last 30 days):**\n`;
+          emailContext += emails.slice(0, 30).map((email: any, idx: number) => {
+            return `Email ${idx + 1}: ${email.subject || "(No Subject)"} | From: ${email.from || "Unknown"} | ${email.snippet || ""}`;
+          }).join("\n");
+          console.log(`Added ${emails.length} emails to RAG context`);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch email context:", error);
+      // Continue without email context
+    }
+
+    // System prompt to guide the AI (enhanced with RAG)
     const systemPrompt = `You are an intelligent academic assistant for college students. You have access to:
 
 - Gmail: Read, search, and send emails
@@ -36,8 +66,10 @@ Your role is to help students:
 5. Summarize long emails and course updates
 
 When a user asks about deadlines, assignments, emails, or schedule:
-- Use the appropriate Composio tools to fetch real data
+- FIRST check the email context below for relevant information
+- Then use Composio tools if you need more specific/real-time data
 - Provide accurate, specific information with dates and details
+- Mention email subjects, senders, and dates when relevant
 - Suggest relevant actions (e.g., "Would you like me to add this to your calendar?")
 - Be concise but helpful
 
@@ -47,8 +79,12 @@ Examples of queries you should handle:
 - "What assignments are due this weekend?"
 - "Search for unread emails from professors"
 - "When is my next exam?"
+- "Summarize my recent emails"
+- "What did Professor Smith say about the exam?"
 
-Always prioritize accuracy and use tools to get real-time data instead of making assumptions.`;
+${emailContext}
+
+Always prioritize accuracy. Use the email context above for quick answers, and use tools for detailed queries.`;
 
     const result = await streamText({
       model: google("gemini-2.0-flash-exp"),

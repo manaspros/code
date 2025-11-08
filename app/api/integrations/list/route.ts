@@ -22,20 +22,29 @@ export async function GET(req: NextRequest) {
       "telegram", // Not in APP_NAMES yet
     ];
 
+    console.log("Fetched connections:", JSON.stringify(connections, null, 2));
+
     // Map connections to integration status
-    const integrations = availableApps.map((app) => ({
-      name: app,
-      connected: connections.some(
-        (conn: any) =>
-          conn.appName.toLowerCase() === app.toLowerCase() &&
-          conn.status === "ACTIVE"
-      ),
-      connection: connections.find(
-        (conn: any) =>
-          conn.appName.toLowerCase() === app.toLowerCase() &&
-          conn.status === "ACTIVE"
-      ),
-    }));
+    const integrations = availableApps.map((app) => {
+      const connection = connections.find(
+        (conn: any) => {
+          // Check both toolkitSlug and toolkit.slug for compatibility
+          const toolkitSlug = conn.toolkitSlug || conn.toolkit?.slug;
+          return (
+            toolkitSlug?.toLowerCase() === app.toLowerCase() &&
+            conn.status === "ACTIVE"
+          );
+        }
+      );
+
+      return {
+        name: app,
+        connected: !!connection,
+        connection: connection,
+      };
+    });
+
+    console.log("Mapped integrations:", integrations);
 
     return NextResponse.json({ integrations });
   } catch (error: any) {

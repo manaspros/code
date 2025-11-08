@@ -5,10 +5,7 @@ import { useRouter } from "next/navigation";
 import { Box, Container, Typography, Grid, AppBar, Toolbar, Button, IconButton, Tab, Tabs } from "@mui/material";
 import { useState } from "react";
 import ChatInterface from "@/components/ChatInterface";
-import DeadlinesList from "@/components/DeadlinesList";
-import DocumentRepository from "@/components/DocumentRepository";
-import AlertsFeed from "@/components/AlertsFeed";
-import VoiceAssistant from "@/components/VoiceAssistant";
+import CriticalPathDashboard from "@/components/CriticalPathDashboard";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AnalyticsIcon from "@mui/icons-material/Analytics";
 import Link from "next/link";
@@ -47,11 +44,17 @@ export default function Dashboard() {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Collegiate Inbox Navigator
           </Typography>
+          <Button color="inherit" component={Link} href="/dashboard">
+            Dashboard
+          </Button>
+          <Button color="inherit" component={Link} href="/inbox">
+            Inbox
+          </Button>
           <Button color="inherit" component={Link} href="/integrations">
             Integrations
           </Button>
-          <Button color="inherit" component={Link} href="/dashboard">
-            Dashboard
+          <Button color="inherit" component={Link} href="/setup">
+            Setup
           </Button>
           <Button color="inherit" component={Link} href="/analytics" startIcon={<AnalyticsIcon />}>
             Analytics
@@ -69,7 +72,12 @@ export default function Dashboard() {
         </Typography>
 
         <Grid container spacing={3}>
-          {/* Left Column - Critical Path Dashboard */}
+          {/* Critical Path Dashboard */}
+          <Grid item xs={12}>
+            <CriticalPathDashboard />
+          </Grid>
+
+          {/* AI Chat Interface */}
           <Grid item xs={12} lg={8}>
             {/* Tabs for different views */}
             <Box sx={{ backgroundColor: "white", borderRadius: 2, boxShadow: 1, mb: 3 }}>
@@ -104,8 +112,11 @@ export default function Dashboard() {
                   <Button variant="outlined" fullWidth component={Link} href="/integrations">
                     Connect Apps
                   </Button>
-                  <Button variant="outlined" fullWidth component={Link} href="/analytics">
-                    View Analytics
+                  <Button variant="outlined" fullWidth component={Link} href="/inbox">
+                    View Gmail Inbox
+                  </Button>
+                  <Button variant="outlined" fullWidth disabled>
+                    View Analytics (Coming Soon)
                   </Button>
                   <Button variant="outlined" fullWidth disabled>
                     Settings (Coming Soon)
